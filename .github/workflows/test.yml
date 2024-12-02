@@ -21,7 +21,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-          
+      
+      - run: mv firebase-adminsdk.template.json firebase-adminsdk.json
       - run: npm install -g pnpm
       - run: pnpm install
       - run: pnpm run build
