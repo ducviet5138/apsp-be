@@ -17,6 +17,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Write 'firebase-adminsdk.json'
+        run: |
+          cat << EOF > ./firebase-adminsdk.json
+            ${{ secrets.FIREBASE_ADMINSDK_JSON }}
+          EOF
+
       - name: Login Docker Hub
         uses: docker/login-action@v1
         with:
@@ -37,7 +43,7 @@ jobs:
 
       - name: Build and Push Docker Image (APSP-BE)
         uses: docker/build-push-action@v2
-        id: docker_build
+        id: docker_build_apsp-be
         with:
           context: ./
           file: ./docker/Dockerfile.service
@@ -49,7 +55,7 @@ jobs:
 
       - name: Build and Push Docker Image (MIGRATION)
         uses: docker/build-push-action@v2
-        id: docker_build
+        id: docker_build_migration
         with:
           context: ./
           file: ./docker/Dockerfile.migration
