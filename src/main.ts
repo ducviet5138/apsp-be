@@ -5,7 +5,16 @@ import { ExceptionHandlerInterceptor, TransformResponseInterceptor } from "share
 import { ThrowFirstErrorValidationPipe } from "shared_resources/pipes";
 
 async function bootstrap() {
-  const app = await NestFactory.create(MainModule);
+  Logger.log("Cors: " + process.env.CORS);
+  const app = await NestFactory.create(MainModule, {
+    cors: {
+      origin: process.env.CORS,
+      methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+      credentials: true,
+    },
+  });
   const port = process.env.PORT ?? 3000;
 
   app.useGlobalInterceptors(new TransformResponseInterceptor(new Reflector()));
