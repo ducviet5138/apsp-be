@@ -94,7 +94,9 @@ jobs:
             git pull
 
             # Write '.env' file
-            echo ${{ secrets.SERVER_ENV }} > .env
+            cat << EOF > ./.env
+              ${{ secrets.SERVER_ENV }}
+            EOF
 
             # Login to Docker Hub
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
