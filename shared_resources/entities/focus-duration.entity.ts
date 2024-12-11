@@ -13,8 +13,11 @@ export class FocusDuration extends BaseEntity implements IFocusDuration {
   @Column({ name: "duration", type: "int", nullable: false })
   duration: number;
 
+  @Column({ name: "task_id", type: "uuid", nullable: false })
+  taskId: string;
+
   // Relations
   @ManyToOne(() => Task, (task) => task.focusDurations)
-  @JoinColumn({ name: "tasks", referencedColumnName: "id" })
+  @JoinColumn({ name: "task", referencedColumnName: "id" })
   task: Task;
 }

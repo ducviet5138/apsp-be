@@ -1,8 +1,10 @@
 import { FocusDuration } from "./focus-duration.entity";
+import { User } from "./user.entity";
 import { PriorityLevelEnum, TaskStatusEnum } from "shared_resources/enums";
+import { IUser } from "shared_resources/interfaces";
 import { IFocusDuration } from "shared_resources/interfaces/focus-duration.interface";
 import { ITask } from "shared_resources/interfaces/task.interface";
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: "tasks" })
 export class Task extends BaseEntity implements ITask {
@@ -27,7 +29,14 @@ export class Task extends BaseEntity implements ITask {
   @Column({ name: "status", type: "enum", enum: TaskStatusEnum, nullable: false, default: TaskStatusEnum.TODO })
   status: TaskStatusEnum;
 
+  @Column({ name: "user_id", type: "uuid", nullable: false })
+  userId: string;
+
   // Relations
   @OneToMany(() => FocusDuration, (focusDuration) => focusDuration.task, { eager: true })
   readonly focusDurations: IFocusDuration[];
+
+  @ManyToOne(() => User, (user) => user.tasks)
+  @JoinColumn({ name: "user_id", referencedColumnName: "id" })
+  readonly user: IUser;
 }

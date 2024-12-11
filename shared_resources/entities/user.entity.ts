@@ -1,6 +1,8 @@
 import { Bucket } from "./bucket.entity";
+import { Task } from "./task.entity";
 import { IUser } from "shared_resources/interfaces";
-import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { ITask } from "shared_resources/interfaces/task.interface";
+import { BaseEntity, Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: "users" })
 export class User extends BaseEntity implements IUser {
@@ -23,4 +25,7 @@ export class User extends BaseEntity implements IUser {
   @OneToOne(() => Bucket)
   @JoinColumn({ name: "avatar", referencedColumnName: "id" })
   readonly bucket: Bucket;
+
+  @OneToMany(() => Task, (task) => task.user)
+  readonly tasks: ITask[];
 }
