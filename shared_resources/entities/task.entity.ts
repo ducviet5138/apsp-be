@@ -33,7 +33,7 @@ export class Task extends BaseEntity implements ITask {
   userId: string;
 
   // Relations
-  @OneToMany(() => FocusDuration, (focusDuration) => focusDuration.task, { eager: true })
+  @OneToMany(() => FocusDuration, (focusDuration) => focusDuration.task)
   readonly focusDurations: IFocusDuration[];
 
   @ManyToOne(() => User, (user) => user.tasks)

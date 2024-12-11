@@ -1,6 +1,5 @@
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
-import { SignUpDto } from "shared_resources/dtos";
-import { SignInDto } from "shared_resources/dtos/sign-in.dto";
+import { SignInDto, SignUpDto } from "shared_resources/dtos";
 import { User } from "shared_resources/entities/user.entity";
 import { FirebaseAuthService } from "shared_resources/firebase";
 
@@ -22,13 +21,13 @@ export class AuthService {
       const { name } = dto;
 
       // Save user to database
-      await User.save({
+      const user = await User.save({
         uid,
         email,
         name,
       });
 
-      const token = await this.firebaseAuthSerice.generateCustomToken(uid, { name, email });
+      const token = await this.firebaseAuthSerice.generateCustomToken(uid, { id: user.id, name, email });
 
       return { token };
     } catch (error) {
@@ -51,6 +50,7 @@ export class AuthService {
       }
 
       const token = await this.firebaseAuthSerice.generateCustomToken(firebaseUser.localId, {
+        id: databaseUser.id,
         name: databaseUser.name,
         email: databaseUser.email,
       });

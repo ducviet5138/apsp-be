@@ -20,6 +20,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformResponseInterceptor(new Reflector()));
   app.useGlobalInterceptors(new ExceptionHandlerInterceptor());
   app.useGlobalPipes(ThrowFirstErrorValidationPipe);
+  app.setGlobalPrefix("api");
   await app.listen(port);
 
   Logger.log(`🚀 Main application is running on: http://localhost:${port}`);
