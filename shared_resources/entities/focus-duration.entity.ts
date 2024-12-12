@@ -18,6 +18,6 @@ export class FocusDuration extends BaseEntity implements IFocusDuration {
 
   // Relations
   @ManyToOne(() => Task, (task) => task.focusDurations)
-  @JoinColumn({ name: "task", referencedColumnName: "id" })
+  @JoinColumn({ name: "task_id", referencedColumnName: "id" })
   task: Task;
 }
