@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
-import { SignInDto, SignUpDto } from "shared_resources/dtos";
+import { SignInDto, SignInWithProviderDto, SignUpDto } from "shared_resources/dtos";
 import { User } from "shared_resources/entities/user.entity";
 import { FirebaseAuthService } from "shared_resources/firebase";
 
@@ -7,6 +7,16 @@ import { FirebaseAuthService } from "shared_resources/firebase";
 export class AuthService {
   private readonly logger = new Logger(this.constructor.name);
   constructor(private readonly firebaseAuthSerice: FirebaseAuthService) {}
+
+  static generatePassword(length: number = 8) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * chars.length);
+      password += chars[randomIndex];
+    }
+    return password;
+  }
 
   async signUp(dto: SignUpDto) {
     try {
@@ -54,6 +64,40 @@ export class AuthService {
         name: databaseUser.name,
         email: databaseUser.email,
       });
+      return { token };
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async signInWithProvider(dto: SignInWithProviderDto) {
+    try {
+      const { credential, provider } = dto;
+      const firebaseUser = await this.firebaseAuthSerice.verifyOAuthCredential(credential, provider);
+      const { email } = firebaseUser;
+      let databaseUser = await User.findOne({
+        where: { email },
+      });
+
+      // If user not exist in database
+      if (!databaseUser) {
+        const generatedPassword = AuthService.generatePassword();
+        await this.firebaseAuthSerice.linkWithProvider(firebaseUser.idToken, firebaseUser.email, generatedPassword);
+        databaseUser = await User.save({
+          email,
+          uid: firebaseUser.localId,
+        });
+        await this.firebaseAuthSerice.setEmailVerifed(databaseUser.uid);
+      }
+
+      // Generate token
+      const token = await this.firebaseAuthSerice.generateCustomToken(databaseUser.uid, {
+        id: databaseUser.id,
+        name: databaseUser.name,
+        email: databaseUser.email,
+      });
+
       return { token };
     } catch (error) {
       this.logger.error(error);
