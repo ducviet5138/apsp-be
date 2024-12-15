@@ -1,4 +1,5 @@
 import { IBucket } from "./bucket.interface";
+import { ITask } from "./task.interface";
 
 export interface IUser {
   id: string;
@@ -9,4 +10,5 @@ export interface IUser {
 
   // Relations
   readonly bucket: IBucket;
+  readonly tasks: ITask[];
 }

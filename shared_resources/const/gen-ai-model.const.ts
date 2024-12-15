@@ -1,0 +1,1 @@
+export const GENAI_MODEL_CONST = "GENAI_MODEL_CONST";
