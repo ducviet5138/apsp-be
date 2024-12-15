@@ -15,6 +15,7 @@ export class FirebaseAuthService {
   private readonly httpService: AxiosInstance;
   private readonly firebaseUrl = "https://identitytoolkit.googleapis.com/v1";
   private readonly apiKey: string;
+  private readonly requestUri: string;
 
   constructor(private readonly configService: ConfigService) {
     // Guide: https://blog.logrocket.com/using-firebase-authentication-in-nestjs-apps/
@@ -32,6 +33,7 @@ export class FirebaseAuthService {
     };
 
     this.apiKey = this.configService.get("FIREBASE_API_KEY");
+    this.requestUri = this.configService.get("REQUEST_URI");
     this.httpService = genericHttpConsumer();
 
     this.app = initializeApp({
@@ -96,6 +98,47 @@ export class FirebaseAuthService {
       const idToken = await this.getIdToken(token);
       const auth = getAuth(this.app);
       return auth.verifyIdToken(idToken);
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
+  }
+
+  async verifyOAuthCredential(credential: string, providerId: string) {
+    try {
+      const response = await this.httpService.post(`${this.firebaseUrl}/accounts:signInWithIdp?key=${this.apiKey}`, {
+        requestUri: this.requestUri,
+        postBody: `id_token=${credential}&providerId=${providerId}`,
+        returnSecureToken: true,
+      });
+      return response.data;
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
+  }
+
+  async linkWithProvider(idToken: string, email: string, password: string) {
+    try {
+      const response = await this.httpService.post(`${this.firebaseUrl}/accounts:update?key=${this.apiKey}`, {
+        idToken,
+        email,
+        password,
+        returnSecureToken: false,
+      });
+      return response.data;
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
+  }
+
+  async setEmailVerifed(uid: string) {
+    try {
+      const auth = getAuth(this.app);
+      await auth.updateUser(uid, {
+        emailVerified: true,
+      });
     } catch (error) {
       this.logger.error(error);
       throw error;
