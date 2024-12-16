@@ -44,4 +44,34 @@ export class TaskService {
       throw new InternalServerErrorException(error);
     }
   }
+
+  async getTasks(user: ICurrentUser, filters: { search?: string; priority?: string; status?: string; sort?: string }) {
+    try {
+      const { search, priority, status, sort } = filters;
+
+      const queryBuilder = Task.createQueryBuilder("task").where("task.userId = :userId", { userId: user.id });
+
+      if (search) {
+        queryBuilder.andWhere("(task.name LIKE :search OR task.description LIKE :search)", { search: `%${search}%` });
+      }
+
+      if (priority) {
+        queryBuilder.andWhere("task.priority = :priority", { priority });
+      }
+
+      if (status) {
+        queryBuilder.andWhere("task.status = :status", { status });
+      }
+
+      if (sort) {
+        const [field, order] = sort.split(":"); // Example: "priority:ASC"
+        queryBuilder.orderBy(`task.${field}`, order.toUpperCase() === "DESC" ? "DESC" : "ASC");
+      }
+
+      return await queryBuilder.getMany();
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(error);
+    }
+  }
 }
