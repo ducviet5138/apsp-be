@@ -1,5 +1,5 @@
 import { TaskService } from "./task.service";
-import { Body, Controller, Delete, Param, ParseUUIDPipe, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "shared_resources/decorators";
 import { CreateTaskDto, UpdateTaskDto } from "shared_resources/dtos";
 import { FirebaseJwtAuthGuard } from "shared_resources/guards";
@@ -27,5 +27,16 @@ export class TaskController {
   @Delete(":id")
   async deleteTask(@Param("id", new ParseUUIDPipe()) id: string, @CurrentUser() user: ICurrentUser) {
     return this.taskService.deleteTask(id, user);
+  }
+
+  @Get()
+  async getTasks(
+    @CurrentUser() user: ICurrentUser,
+    @Query("search") search?: string,
+    @Query("priority") priority?: string,
+    @Query("status") status?: string,
+    @Query("sort") sort?: string
+  ) {
+    return this.taskService.getTasks(user, { search, priority, status, sort });
   }
 }

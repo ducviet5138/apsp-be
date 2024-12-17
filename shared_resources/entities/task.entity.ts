@@ -20,10 +20,10 @@ export class Task extends BaseEntity implements ITask {
   @Column({ name: "priority_level", type: "enum", enum: PriorityLevelEnum, default: PriorityLevelEnum.LOW })
   priorityLevel: PriorityLevelEnum;
 
-  @Column({ name: "start_time", type: "timestamp", nullable: false })
+  @Column({ name: "start_time", type: "timestamp", nullable: true })
   startTime: Date;
 
-  @Column({ name: "estimated_time", type: "int", nullable: false })
+  @Column({ name: "estimated_time", type: "int", nullable: true })
   estimatedTime: number;
 
   @Column({ name: "status", type: "enum", enum: TaskStatusEnum, nullable: false, default: TaskStatusEnum.TODO })
