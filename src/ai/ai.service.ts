@@ -1,15 +1,20 @@
-import { GenerativeModel } from "@google/generative-ai";
-import { Inject, Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Task } from "shared_resources/entities";
-import { ICurrentUser } from "shared_resources/interfaces";
-import { IFocusDuration } from "shared_resources/interfaces/focus-duration.interface";
-import { ITask } from "shared_resources/interfaces/task.interface";
+import { GenAIGemini } from "shared_resources/genai";
+import { ICurrentUser, IFocusDuration, IModelTemplate, ITask } from "shared_resources/interfaces";
 
 @Injectable()
 export class AIService {
   private readonly logger = new Logger(this.constructor.name);
+  private model: IModelTemplate;
 
-  constructor(@Inject("GENAI_MODEL_CONST") private readonly model: GenerativeModel) {}
+  constructor(private readonly configService: ConfigService) {
+    this.model = new GenAIGemini({
+      model: "learnlm-1.5-pro-experimental",
+      apiKey: this.configService.get<string>("GEMINI_API_KEY"),
+    });
+  }
 
   async getFeedback(user: ICurrentUser) {
     try {
@@ -48,7 +53,7 @@ export class AIService {
             .join("| ");
 
       const result = await this.model.generateContent(data);
-      return JSON.parse(result.response.text());
+      return result;
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException(error);
