@@ -63,6 +63,8 @@ export class TaskService {
         queryBuilder.andWhere("task.status = :status", { status });
       }
 
+      queryBuilder.leftJoinAndSelect("task.focusDurations", "focusDurations");
+
       if (sort) {
         const [field, order] = sort.split(":"); // Example: "priority:ASC"
         queryBuilder.orderBy(`task.${field}`, order.toUpperCase() === "DESC" ? "DESC" : "ASC");
