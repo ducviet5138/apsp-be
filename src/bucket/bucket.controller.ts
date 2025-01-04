@@ -1,11 +1,13 @@
 import { BucketService } from "./bucket.service";
 import {
   Controller,
+  Delete,
   FileTypeValidator,
   Get,
   Param,
   ParseFilePipe,
   Post,
+  Put,
   Res,
   UploadedFile,
   UseGuards,
@@ -36,5 +38,24 @@ export class BucketController {
   @Get(":id")
   getFile(@Param("id") id: string, @Res() response: Response) {
     return this.bucketService.getFile(id, response);
+  }
+
+  @Delete(":id")
+  deleteFile(@Param("id") id: string) {
+    return this.bucketService.deleteFile(id);
+  }
+
+  @Put(":id")
+  @UseInterceptors(FileInterceptor("file"))
+  updateFile(
+    @Param("id") id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: /^image\/(jpeg|png|gif|bmp|webp)$/ })],
+      })
+    )
+    file: Express.Multer.File
+  ) {
+    return this.bucketService.update(id, file);
   }
 }
