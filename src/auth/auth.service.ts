@@ -4,13 +4,15 @@ import { NewPasswordDto, SignInDto, SignInWithProviderDto, SignUpDto, VerifyOTPD
 import { User } from "shared_resources/entities/user.entity";
 import { OTPActionEnum } from "shared_resources/enums";
 import { FirebaseAuthService } from "shared_resources/firebase";
+import { MailService } from "shared_resources/mail";
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(this.constructor.name);
   constructor(
     private readonly firebaseAuthSerice: FirebaseAuthService,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
+    private readonly mailService: MailService
   ) {}
 
   static generatePassword(length: number = 8) {
@@ -44,6 +46,9 @@ export class AuthService {
       await this.redisService.set(`${OTPActionEnum.SIGN_UP}-${dto.email}`, JSON.stringify(dto));
       const otp = AuthService.generateOtp();
       await this.redisService.set(`${OTPActionEnum.SIGN_UP}-otp-${dto.email}`, otp);
+
+      // Send email
+      await this.mailService.sendOtp(otp, dto.email);
 
       return OTPActionEnum.SIGN_UP;
     } catch (error) {
@@ -182,6 +187,9 @@ export class AuthService {
       await this.redisService.set(`${OTPActionEnum.RESET_PASSWORD}-${dto.email}`, JSON.stringify(dto));
       const otp = AuthService.generateOtp();
       await this.redisService.set(`${OTPActionEnum.RESET_PASSWORD}-otp-${dto.email}`, otp);
+
+      // Send email
+      await this.mailService.sendOtp(otp, dto.email);
 
       return OTPActionEnum.RESET_PASSWORD;
     } catch (error) {

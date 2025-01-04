@@ -11,6 +11,8 @@ import { REDIS_PROVIDER } from "shared_resources/const";
       provide: REDIS_PROVIDER,
       inject: [ConfigService],
       useFactory: (configService: ConfigService): RedisClientOptions => ({
+        username: configService.get("REDIS_USER"),
+        password: configService.get("REDIS_PASS"),
         socket: {
           host: configService.get("REDIS_HOST"),
           port: configService.get("REDIS_PORT"),
