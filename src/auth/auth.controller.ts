@@ -1,6 +1,6 @@
 import { AuthService } from "./auth.service";
 import { Body, Controller, Post } from "@nestjs/common";
-import { SignInDto, SignInWithProviderDto, SignUpDto } from "shared_resources/dtos";
+import { NewPasswordDto, SignInDto, SignInWithProviderDto, SignUpDto, VerifyOTPDto } from "shared_resources/dtos";
 
 @Controller("auth")
 export class AuthController {
@@ -11,6 +11,11 @@ export class AuthController {
     return this.authService.signUp(dto);
   }
 
+  @Post("verify-otp")
+  verifyOTP(@Body() dto: VerifyOTPDto) {
+    return this.authService.verifyOTP(dto);
+  }
+
   @Post("sign-in")
   signIn(@Body() dto: SignInDto) {
     return this.authService.signIn(dto);
@@ -19,5 +24,10 @@ export class AuthController {
   @Post("provider")
   signInWithProvider(@Body() dto: SignInWithProviderDto) {
     return this.authService.signInWithProvider(dto);
+  }
+
+  @Post("reset-password")
+  forgotPassword(@Body() dto: NewPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 }
