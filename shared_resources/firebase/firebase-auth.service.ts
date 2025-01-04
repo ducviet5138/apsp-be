@@ -144,4 +144,16 @@ export class FirebaseAuthService {
       throw error;
     }
   }
+
+  async updatePassword(uid: string, password: string) {
+    try {
+      const auth = getAuth(this.app);
+      await auth.updateUser(uid, {
+        password,
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
+  }
 }
