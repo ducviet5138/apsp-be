@@ -1,9 +1,11 @@
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { RedisService } from "shared_resources/database";
 import { NewPasswordDto, SignInDto, SignInWithProviderDto, SignUpDto, VerifyOTPDto } from "shared_resources/dtos";
+import { ResetPasswordRequestDto } from "shared_resources/dtos/reset-password-request.dto";
 import { User } from "shared_resources/entities/user.entity";
 import { OTPActionEnum } from "shared_resources/enums";
 import { FirebaseAuthService } from "shared_resources/firebase";
+import { ICurrentUser } from "shared_resources/interfaces";
 import { MailService } from "shared_resources/mail";
 
 @Injectable()
@@ -92,19 +94,13 @@ export class AuthService {
           throw new Error("Invalid OTP");
         }
 
-        const rawNewPasswordDto = await this.redisService.get(`${OTPActionEnum.RESET_PASSWORD}-${dto.email}`);
-        const newPasswordDto: NewPasswordDto = JSON.parse(rawNewPasswordDto);
-
         const databaseUser = await User.findOne({ where: { email: dto.email } });
-        await this.firebaseAuthSerice.updatePassword(databaseUser.uid, newPasswordDto.password);
-
         const token = await this.firebaseAuthSerice.generateCustomToken(databaseUser.uid, {
           id: databaseUser.id,
           name: databaseUser.name,
           email: databaseUser.email,
         });
 
-        this.redisService.delete(`${OTPActionEnum.RESET_PASSWORD}-${dto.email}`);
         this.redisService.delete(`${OTPActionEnum.RESET_PASSWORD}-otp-${dto.email}`);
 
         return { token };
@@ -176,22 +172,39 @@ export class AuthService {
     }
   }
 
-  async resetPassword(dto: NewPasswordDto) {
+  sendResetPasswordOTP(dto: ResetPasswordRequestDto) {
     try {
-      const databaseUser = await User.findOne({ where: { email: dto.email } });
+      const otp = AuthService.generateOtp();
+      this.redisService.set(`${OTPActionEnum.RESET_PASSWORD}-otp-${dto.email}`, otp);
+
+      // Send email
+      this.mailService.sendOtp(otp, dto.email);
+
+      return OTPActionEnum.RESET_PASSWORD;
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async resetPassword(user: ICurrentUser, dto: NewPasswordDto) {
+    try {
+      const databaseUser = await User.findOne({ where: { email: user.email } });
       if (!databaseUser) {
         throw new Error("User not found");
       }
 
-      // Save user to redis before confirming email
-      await this.redisService.set(`${OTPActionEnum.RESET_PASSWORD}-${dto.email}`, JSON.stringify(dto));
-      const otp = AuthService.generateOtp();
-      await this.redisService.set(`${OTPActionEnum.RESET_PASSWORD}-otp-${dto.email}`, otp);
+      // Update password
+      await this.firebaseAuthSerice.updatePassword(databaseUser.uid, dto.password);
 
-      // Send email
-      await this.mailService.sendOtp(otp, dto.email);
+      // Return new token
+      const token = await this.firebaseAuthSerice.generateCustomToken(databaseUser.uid, {
+        id: databaseUser.id,
+        name: databaseUser.name,
+        email: databaseUser.email,
+      });
 
-      return OTPActionEnum.RESET_PASSWORD;
+      return { token };
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException(error);
