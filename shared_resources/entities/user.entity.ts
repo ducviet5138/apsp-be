@@ -11,7 +11,7 @@ export class User extends BaseEntity implements IUser {
   @Column({ name: "uid", type: "text", nullable: false })
   uid: string;
 
-  @Column({ name: "name", type: "text", nullable: false })
+  @Column({ name: "name", type: "text", nullable: false, select: false })
   name: string;
 
   @Column({ name: "email", type: "text", nullable: false })

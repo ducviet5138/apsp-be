@@ -3,6 +3,7 @@ import * as mime from "mime-types";
 import * as path from "path";
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { Response } from "express";
+import { RESPONSE_OK } from "shared_resources/const";
 import { Bucket } from "shared_resources/entities";
 import { v4 as uuidv4 } from "uuid";
 
@@ -49,13 +50,58 @@ export class BucketService {
       const fileStream = fs.createReadStream(filePath);
 
       // Dynamically determine the MIME type
-      const mimeType = mime.lookup(filePath) || "application/octet-stream";
+      const mimeType = mime.lookup(file.name) || "application/octet-stream";
 
       // Set appropriate headers
       response.setHeader("Content-Type", mimeType);
       response.setHeader("Content-Disposition", `inline; filename="${file.name}"`);
 
       fileStream.pipe(response);
+    } catch (error) {
+      this.logger.error(error);
+      return new InternalServerErrorException(error);
+    }
+  }
+
+  async deleteFile(id: string) {
+    try {
+      const file = await Bucket.findOne({ where: { id } });
+      if (!file) {
+        throw new Error("File not found");
+      }
+
+      const filePath = path.join(this.bucketPath, file.id);
+
+      // Delete the file
+      await fs.promises.unlink(filePath);
+      await Bucket.delete({ id });
+
+      return RESPONSE_OK;
+    } catch (error) {
+      this.logger.error(error);
+      return new InternalServerErrorException(error);
+    }
+  }
+
+  async update(id: string, file: Express.Multer.File) {
+    try {
+      const oldFile = await Bucket.findOne({ where: { id } });
+      if (!oldFile) {
+        throw new Error("File not found");
+      }
+
+      const filePath = path.join(this.bucketPath, oldFile.id);
+
+      // Delete the old file
+      await fs.promises.unlink(filePath);
+
+      // Save the new file
+      fs.writeFileSync(filePath, file.buffer);
+
+      return Bucket.save({
+        id: oldFile.id,
+        name: file.originalname,
+      });
     } catch (error) {
       this.logger.error(error);
       return new InternalServerErrorException(error);

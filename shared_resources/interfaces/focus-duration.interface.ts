@@ -9,3 +9,8 @@ export interface IFocusDuration {
   // Relations
   readonly task: ITask;
 }
+
+export interface IReducedFocusDuration {
+  start: Date;
+  duration: number;
+}

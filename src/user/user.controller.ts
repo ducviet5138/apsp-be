@@ -1,6 +1,7 @@
 import { UserService } from "./user.service";
-import { Controller, Get, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Put, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "shared_resources/decorators";
+import { UpdateUserProfileDto } from "shared_resources/dtos";
 import { FirebaseJwtAuthGuard } from "shared_resources/guards";
 import { ICurrentUser } from "shared_resources/interfaces";
 
@@ -12,5 +13,10 @@ export class UserController {
   @Get("profile")
   getUserProfile(@CurrentUser() user: ICurrentUser) {
     return this.userService.getUserProfile(user);
+  }
+
+  @Put("profile")
+  updateUserProfile(@CurrentUser() user: ICurrentUser, @Body() dto: UpdateUserProfileDto) {
+    return this.userService.updateUserProfile(user, dto);
   }
 }

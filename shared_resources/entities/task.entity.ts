@@ -31,7 +31,12 @@ export class Task extends BaseEntity implements ITask {
   userId: string;
 
   // Relations
-  @OneToMany(() => FocusDuration, (focusDuration) => focusDuration.task)
+  @OneToMany(() => FocusDuration, (focusDuration) => focusDuration.task, {
+    cascade: true,
+    eager: true,
+    onDelete: "CASCADE",
+    orphanedRowAction: "delete",
+  })
   readonly focusDurations: IFocusDuration[];
 
   @ManyToOne(() => User, (user) => user.tasks)

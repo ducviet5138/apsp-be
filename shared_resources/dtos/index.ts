@@ -7,3 +7,5 @@ export * from "./new-password.dto";
 
 export * from "./create-task.dto";
 export * from "./update-task.dto";
+
+export * from "./update-user-profile.dto";
