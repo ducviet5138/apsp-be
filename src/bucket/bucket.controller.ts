@@ -1,13 +1,61 @@
-import { Controller, Get, UseGuards } from "@nestjs/common";
-import { CurrentUser } from "shared_resources/decorators";
+import { BucketService } from "./bucket.service";
+import {
+  Controller,
+  Delete,
+  FileTypeValidator,
+  Get,
+  Param,
+  ParseFilePipe,
+  Post,
+  Put,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { Response } from "express";
 import { FirebaseJwtAuthGuard } from "shared_resources/guards";
-import { ICurrentUser } from "shared_resources/interfaces";
 
-@Controller("buckets")
+@Controller("files")
 @UseGuards(FirebaseJwtAuthGuard)
 export class BucketController {
-  @Get()
-  async getBuckets(@CurrentUser() user: ICurrentUser) {
-    return user;
+  constructor(private readonly bucketService: BucketService) {}
+
+  @Post()
+  @UseInterceptors(FileInterceptor("file"))
+  uploadFile(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: /^image\/(jpeg|png|gif|bmp|webp)$/ })],
+      })
+    )
+    file: Express.Multer.File
+  ) {
+    return this.bucketService.upload(file);
+  }
+
+  @Get(":id")
+  getFile(@Param("id") id: string, @Res() response: Response) {
+    return this.bucketService.getFile(id, response);
+  }
+
+  @Delete(":id")
+  deleteFile(@Param("id") id: string) {
+    return this.bucketService.deleteFile(id);
+  }
+
+  @Put(":id")
+  @UseInterceptors(FileInterceptor("file"))
+  updateFile(
+    @Param("id") id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: /^image\/(jpeg|png|gif|bmp|webp)$/ })],
+      })
+    )
+    file: Express.Multer.File
+  ) {
+    return this.bucketService.update(id, file);
   }
 }
