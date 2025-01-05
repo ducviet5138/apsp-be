@@ -1,6 +1,8 @@
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { RESPONSE_OK } from "shared_resources/const";
 import { CreateTaskDto, UpdateTaskDto } from "shared_resources/dtos";
-import { Task } from "shared_resources/entities";
+import { Logging, Task } from "shared_resources/entities";
+import { LoggingActionEnum } from "shared_resources/enums";
 import { ICurrentUser } from "shared_resources/interfaces";
 
 @Injectable()
@@ -9,10 +11,17 @@ export class TaskService {
 
   async createTask(user: ICurrentUser, dto: CreateTaskDto) {
     try {
-      return Task.save({
+      const task = await Task.save({
         ...dto,
         userId: user.id,
       });
+
+      await Logging.save({
+        action: LoggingActionEnum.CREATE_TASK,
+        userId: user.id,
+      });
+
+      return task;
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException(error);
@@ -26,10 +35,24 @@ export class TaskService {
         throw new Error("Task not found");
       }
 
-      return Task.save({
+      const updatedTask = await Task.save({
         ...existedTask,
         ...dto,
       });
+
+      if (dto.focusDurations && dto.focusDurations.length > 0) {
+        await Logging.save({
+          action: LoggingActionEnum.UPDATE_FOCUS_DURATION,
+          userId: user.id,
+        });
+      }
+
+      await Logging.save({
+        action: LoggingActionEnum.UPDATE_TASK,
+        userId: user.id,
+      });
+
+      return updatedTask;
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException(error);
@@ -38,7 +61,12 @@ export class TaskService {
 
   async deleteTask(id: string, user: ICurrentUser) {
     try {
-      return Task.delete({ id, userId: user.id });
+      await Task.delete({ id, userId: user.id });
+      await Logging.save({
+        action: LoggingActionEnum.DELETE_TASK,
+        userId: user.id,
+      });
+      return RESPONSE_OK;
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException(error);
