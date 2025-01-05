@@ -6,3 +6,4 @@ export * from "./focus-duration.interface";
 export * from "./model-template.interface";
 export * from "./model-response.interface";
 export * from "./model-params.interface";
+export * from "./logging.interface";

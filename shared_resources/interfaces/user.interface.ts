@@ -1,4 +1,5 @@
 import { IBucket } from "./bucket.interface";
+import { ILogging } from "./logging.interface";
 import { ITask } from "./task.interface";
 
 export interface IUser {
@@ -11,4 +12,5 @@ export interface IUser {
   // Relations
   readonly bucket: IBucket;
   readonly tasks: ITask[];
+  readonly loggings: ILogging[];
 }
