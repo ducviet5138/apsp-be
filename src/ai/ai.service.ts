@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Task } from "shared_resources/entities";
-import { GenAIGemini } from "shared_resources/genai";
+import { GenAIGeminiFeedback } from "shared_resources/genai";
 import { ICurrentUser, IFocusDuration, IModelTemplate, ITask } from "shared_resources/interfaces";
 
 @Injectable()
@@ -10,7 +10,7 @@ export class AIService {
   private model: IModelTemplate;
 
   constructor(private readonly configService: ConfigService) {
-    this.model = new GenAIGemini({
+    this.model = new GenAIGeminiFeedback({
       model: "learnlm-1.5-pro-experimental",
       apiKey: this.configService.get<string>("GEMINI_API_KEY"),
     });

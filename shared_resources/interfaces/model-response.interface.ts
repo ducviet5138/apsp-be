@@ -1,4 +1,4 @@
-export interface IModelResponse {
+export interface IModelResponseFeedback {
   warnings: string;
   recommendations: string;
 }
