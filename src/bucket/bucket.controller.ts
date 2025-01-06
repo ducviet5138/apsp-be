@@ -18,11 +18,11 @@ import { Response } from "express";
 import { FirebaseJwtAuthGuard } from "shared_resources/guards";
 
 @Controller("files")
-@UseGuards(FirebaseJwtAuthGuard)
 export class BucketController {
   constructor(private readonly bucketService: BucketService) {}
 
   @Post()
+  @UseGuards(FirebaseJwtAuthGuard)
   @UseInterceptors(FileInterceptor("file"))
   uploadFile(
     @UploadedFile(
@@ -41,11 +41,13 @@ export class BucketController {
   }
 
   @Delete(":id")
+  @UseGuards(FirebaseJwtAuthGuard)
   deleteFile(@Param("id") id: string) {
     return this.bucketService.deleteFile(id);
   }
 
   @Put(":id")
+  @UseGuards(FirebaseJwtAuthGuard)
   @UseInterceptors(FileInterceptor("file"))
   updateFile(
     @Param("id") id: string,
