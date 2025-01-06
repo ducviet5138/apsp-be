@@ -1,2 +1,2 @@
 export * from "./genai-model";
-export * from "./genai-gemini";
+export * from "./genai-gemini-feedback";
