@@ -9,7 +9,7 @@ export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ name: "uid", type: "text", nullable: false, select: false })
+  @Column({ name: "uid", type: "text", nullable: false })
   uid: string;
 
   @Column({ name: "name", type: "text", nullable: false })
