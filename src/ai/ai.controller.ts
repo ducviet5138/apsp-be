@@ -14,8 +14,8 @@ export class AIController {
     return this.aiService.getFeedback(user);
   }
 
-  // @Get("analytics")
-  // async getAnalytics(@CurrentUser() user: ICurrentUser) {
-  //   return this.aiService.getAnalytics(user);
-  // }
+  @Get("analytics")
+  async getAnalytics(@CurrentUser() user: ICurrentUser) {
+    return this.aiService.getAnalytics(user);
+  }
 }
